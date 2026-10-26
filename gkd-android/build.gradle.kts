@@ -28,7 +28,7 @@ android {
             localeFilters += listOf("zh-rCN", "en")
         }
         ndk {
-            abiFilters += listOf("arm64-v8a", "x86_64")
+            abiFilters += listOf("arm64-v8a")
         }
 
         manifestPlaceholders["buildKey"] = ""

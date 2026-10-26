@@ -194,3 +194,9 @@ if (System.getProperty("os.name").startsWith("Windows", ignoreCase = true)) {
         destinationDirectory.set(rootProject.layout.projectDirectory.dir(".local/desktop-packages"))
     }
 }
+
+// Robolectric FileDescriptorInterceptor uses the JDK file-descriptor access bridge.
+tasks.withType<Test>().matching { it.name == "testAndroidHostTest" }.configureEach {
+    jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED")
+    testLogging.exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+}
