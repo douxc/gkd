@@ -166,7 +166,7 @@ class App : Application() {
     }
 
     fun startLaunchActivity() {
-        val intent = packageManager.getLaunchIntentForPackage(META.appId)!!
+        val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(
             Intent.FLAG_ACTIVITY_NEW_TASK
                     or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -261,6 +261,7 @@ class App : Application() {
                 enableBlockA11yAppList = false,
                 enableStatusService = false,
                 enableStatusOverlay = false,
+                excludeFromRecents = true,
             )
         }
         initA11yFeat()

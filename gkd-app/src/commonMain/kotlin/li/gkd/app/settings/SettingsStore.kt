@@ -14,7 +14,7 @@ data class SettingsStore(
     val enableMatch: Boolean = true,
     val enableStatusService: Boolean = false,
     val enableStatusOverlay: Boolean = true,
-    val excludeFromRecents: Boolean = false,
+    val excludeFromRecents: Boolean = true,
     val captureScreenshot: Boolean = false,
     val screenshotTargetAppId: String = "",
     val screenshotEventSelector: String = "",
