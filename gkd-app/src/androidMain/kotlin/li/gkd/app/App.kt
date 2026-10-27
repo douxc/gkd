@@ -256,16 +256,8 @@ class App : Application() {
         NotificationChannels.initialize()
         PackageAppCatalog.initialize()
         initA11yFeat()
-        initPrivilege()
-        appScope.launchLogged(Dispatchers.IO) {
-            PrivilegeUi.prepareExternalShellScript(gkdPrivilegeUiConfig.manualShellScriptPath)
-        }
-        appScope.launchLogged(Dispatchers.IO) {
-            PrivilegeUi.startSilently(gkdPrivilegeUiConfig)
-        }
         appScope.launchLogged(Dispatchers.IO) {
             SubscriptionRepository.initialize(SubscriptionDefaults.fromResources())
-            clearHttpSubs()
         }
         initA11yWhiteAppList()
         RuntimeStateSynchronizer.requestSync()
