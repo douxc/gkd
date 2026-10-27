@@ -10,6 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Prepare fixed signing key
+        env:
+          GKD_STORE_FILE_BASE64: ${{ secrets.GKD_STORE_FILE_BASE64 }}
+          GKD_STORE_PASSWORD: ${{ secrets.GKD_STORE_PASSWORD }}
+          GKD_KEY_ALIAS: ${{ secrets.GKD_KEY_ALIAS }}
+          GKD_KEY_PASSWORD: ${{ secrets.GKD_KEY_PASSWORD }}
+        run: |
+          for name in GKD_STORE_FILE_BASE64 GKD_STORE_PASSWORD GKD_KEY_ALIAS GKD_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing repository secret: $name"
+              exit 1
+            fi
+          done
+          umask 077
+          printf '%s' "$GKD_STORE_FILE_BASE64" | base64 --decode > "$RUNNER_TEMP/gkd-speedup.jks"
+          keytool -list -keystore "$RUNNER_TEMP/gkd-speedup.jks" -alias "$GKD_KEY_ALIAS" -storepass:env GKD_STORE_PASSWORD > /dev/null
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -23,6 +39,11 @@ jobs:
       - run: ./gradlew :gkd-app:jvmTest --tests 'li.gkd.app.rule.RuleQueryQueueTest'
       - run: ./gradlew :gkd-app:testAndroidHostTest --tests 'li.gkd.app.a11y.A11yEventQueueTest'
       - run: ./gradlew :gkd-android:assembleGkdRelease
+        env:
+          GKD_STORE_FILE: ${{ runner.temp }}/gkd-speedup.jks
+          GKD_STORE_PASSWORD: ${{ secrets.GKD_STORE_PASSWORD }}
+          GKD_KEY_ALIAS: ${{ secrets.GKD_KEY_ALIAS }}
+          GKD_KEY_PASSWORD: ${{ secrets.GKD_KEY_PASSWORD }}
       - uses: actions/upload-artifact@v7
         with:
           name: gkd-speedup
@@ -36,3 +57,6 @@ jobs:
           path: |
             gkd-app/build/test-results/
             gkd-app/build/reports/tests/
+      - name: Remove signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/gkd-speedup.jks"
