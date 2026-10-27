@@ -126,7 +126,7 @@ fun dashboardPage(host: UiHost, vm: HomeViewModel): ScaffoldExt {
                 onClick = { li.gkd.app.ui.platform.openA11ySettings() },
             )
             li.gkd.app.ui.component.GkTextSwitch(
-                title = stringResource(Res.string.rule_match),
+                title = stringResource(Res.string.rule_matching_label),
                 checked = store.enableMatch,
                 onCheckedChange = { vm.toggleMatching() },
             )
