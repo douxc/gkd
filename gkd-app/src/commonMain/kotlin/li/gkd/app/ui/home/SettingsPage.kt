@@ -44,199 +44,23 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun settingsPage(
-    host: UiHost,
-    vm: HomeViewModel,
-): ScaffoldExt {
-    val mainVm = MainViewModel.requireCurrent()
-    val scope = rememberCoroutineScope()
-    val appName = META.appName
+fun settingsPage(host: UiHost, vm: HomeViewModel): ScaffoldExt {
     val store by SettingsRepository.settings.collectAsStateWithLifecycle()
-    val privilegeAvailable = privilegeAvailable()
-    val backupDialog by vm.backupDialog.collectAsStateWithLifecycle()
-    GkBackupDialogs(
-        dialog = backupDialog,
-        onDismiss = { vm.setBackupDialog(null) },
-        onExport = { vm.setBackupDialog(BackupDialog.Export) },
-        onImport = host::importAppBackup,
-        onShare = host::shareAppBackup,
-        onSaveDownloads = host::saveAppBackup,
-    )
-    fun setExcludeFromRecents(enabled: Boolean) {
-        scope.launchUi {
-            if (
-                !enabled ||
-                    mainVm.dialogRequests.confirm(
-                        title = getString(Res.string.hide_from_recents),
-                        text = getString(Res.string.hide_from_recents_warning),
-                        confirmText = getString(Res.string.action_continue),
-                    )
-            )
-                SettingsRepository.updateSettings { it.copy(excludeFromRecents = enabled) }
-        }
-    }
-    val scroll = rememberColumnScrollState()
-    ResetPageScrollOnRequest(vm.homeState, BottomNavItem.Settings, scroll::resetScrollAndAwait)
     return ScaffoldExt(
         BottomNavItem.Settings,
-        modifier = Modifier.gkTopAppBarScroll(scroll.scrollBehavior),
-        topBar = {
-            GkTopAppBar(
-                scrollBehavior = scroll.scrollBehavior,
-                title = { Text(BottomNavItem.Settings.label) },
+        topBar = { GkTopAppBar(title = { Text(BottomNavItem.Settings.label) }) },
+    ) { padding ->
+        Column(Modifier.padding(padding)) {
+            GkTextMenu(
+                title = stringResource(Res.string.theme_mode),
+                option = DarkThemeOption.objects.findOption(store.enableDarkTheme),
+                onOptionChange = { option -> SettingsRepository.updateSettings { it.copy(enableDarkTheme = option.value) } },
             )
-        },
-        content = { padding ->
-            Column(modifier = Modifier.padding(padding).verticalScroll(scroll.scrollState)) {
-                Text(
-                    text = stringResource(Res.string.settings_general),
-                    modifier = Modifier.titleItemPadding(showTop = false),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                GkSettingItem(
-                    title = stringResource(Res.string.action_toast),
-                    subtitle =
-                        listOf(
-                                if (!store.toastWhenClick) stringResource(Res.string.turned_off)
-                                else if (store.useSystemToast)
-                                    stringResource(Res.string.action_toast_style_system)
-                                else "",
-                                store.actionToast.lineSequence().joinToString(" ").trim(),
-                            )
-                            .filter { it.isNotEmpty() }
-                            .joinToString(" · "),
-                    subtitleMaxLines = 1,
-                    subtitleOverflow = TextOverflow.Ellipsis,
-                    onClick = { mainVm.navigator.navigate(ActionToastRoute) },
-                )
-
-                val rules by ruleGroupState.collectAsStateWithLifecycle()
-                val count by SettingsRepository.actionCount.collectAsStateWithLifecycle()
-                val groups = rules.value?.groups
-                val summary = dashboardSummary(rules, count)
-                fun format(text: String) =
-                    formatNotificationTemplate(
-                        text,
-                        groups?.globalGroups?.size,
-                        groups?.appSize,
-                        groups?.appGroupSize,
-                        count,
-                    )
-
-                val title =
-                    if (store.useCustomNotifText) format(store.customNotifTitle) else appName
-                val text = if (store.useCustomNotifText) format(store.customNotifText) else summary
-                GkSettingItem(
-                    stringResource(Res.string.notification_text),
-                    subtitle =
-                        listOf(title, text)
-                            .map {
-                                it.lineSequence().joinToString(" ").trim()
-                            }
-                            .filter { it.isNotEmpty() }
-                            .joinToString(" · "),
-                    subtitleMaxLines = 1,
-                    subtitleOverflow = TextOverflow.Ellipsis,
-                    onClick = { mainVm.navigator.navigate(NotificationTextRoute) },
-                )
-
-                GkTextSwitch(
-                    title = stringResource(Res.string.hide_from_recents),
-                    subtitle = stringResource(Res.string.hide_from_recents_description),
-                    checked = store.excludeFromRecents,
-                    onCheckedChange = ::setExcludeFromRecents,
-                )
-
-                AnimatedVisibility(visible = store.enableBlockA11yAppList) {
-                    Text(
-                        text = stringResource(Res.string.a11y_label),
-                        modifier = Modifier.titleItemPadding(),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-                GkTextSwitch(
-                    title = stringResource(Res.string.service_partial_disable),
-                    subtitle =
-                        if (store.enableBlockA11yAppList && !privilegeAvailable)
-                            stringResource(Res.string.privilege_service_disconnected)
-                        else stringResource(Res.string.service_partial_disable_description),
-                    checked = store.enableBlockA11yAppList,
-                    onClick = { mainVm.navigator.navigate(BlockA11ySetupRoute) },
-                    onClickLabel = stringResource(Res.string.partial_disable_setup_open),
-                    onCheckedChange = {
-                        if (it) {
-                            mainVm.navigator.navigate(BlockA11ySetupRoute)
-                        } else {
-                            SettingsRepository.setBlockA11yAppListEnabled(false)
-                        }
-                    },
-                )
-                AnimatedVisibility(visible = store.enableBlockA11yAppList) {
-                    GkSettingItem(
-                        title = stringResource(Res.string.whitelist_title),
-                        onClickLabel = stringResource(Res.string.a11y_whitelist_open),
-                        onClick = {
-                            mainVm.navigator.navigate(BlockA11yAppListRoute)
-                        },
-                    )
-                }
-
-                Text(
-                    text = stringResource(Res.string.settings_appearance),
-                    modifier = Modifier.titleItemPadding(),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-
-                GkTextMenu(
-                    title = stringResource(Res.string.theme_mode),
-                    option = DarkThemeOption.objects.findOption(store.enableDarkTheme),
-                    onOptionChange = {
-                        SettingsRepository.updateSettings { store -> store.copy(enableDarkTheme = it.value) }
-                    },
-                )
-
-                if (dynamicColorAvailable()) {
-                    GkTextSwitch(
-                        title = stringResource(Res.string.dynamic_colors),
-                        checked = store.enableDynamicColor,
-                        onCheckedChange = {
-                            SettingsRepository.updateSettings { store -> store.copy(enableDynamicColor = it) }
-                        },
-                    )
-                }
-
-                Text(
-                    text = stringResource(Res.string.settings_other),
-                    modifier = Modifier.titleItemPadding(),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-
-                GkSettingItem(
-                    title = stringResource(Res.string.advanced_settings),
-                    onClick = {
-                        mainVm.navigator.navigate(AdvancedPageRoute)
-                    },
-                )
-                GkSettingItem(
-                    title = stringResource(Res.string.backup_restore),
-                    onClick = {
-                        vm.setBackupDialog(BackupDialog.Main)
-                    },
-                )
-
-                GkSettingItem(
-                    title = stringResource(Res.string.about_title),
-                    onClick = {
-                        mainVm.navigator.navigate(AboutRoute)
-                    },
-                )
-
-                GkPageBottomSpace()
-            }
-        },
-    )
+            GkSettingItem(
+                title = stringResource(Res.string.a11y_label),
+                onClick = { li.gkd.app.ui.platform.openA11ySettings() },
+            )
+            GkPageBottomSpace()
+        }
+    }
 }

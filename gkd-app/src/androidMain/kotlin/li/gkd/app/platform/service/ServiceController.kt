@@ -4,7 +4,6 @@ import li.gkd.app.service.ActivityService
 import li.gkd.app.service.ButtonService
 import li.gkd.app.service.EventService
 import li.gkd.app.service.HttpService
-import li.gkd.app.service.StatusService
 import li.gkd.app.settings.SettingsRepository
 
 object ServiceController {
@@ -31,15 +30,6 @@ object ServiceController {
         start = EventService::start,
         stop = EventService::stop,
     )
-
-    fun setStatusEnabled(enabled: Boolean) {
-        setEnabled(
-            enabled = enabled,
-            start = StatusService::start,
-            stop = StatusService::stop,
-        )
-        SettingsRepository.updateSettings { it.copy(enableStatusService = enabled) }
-    }
 
     private fun setEnabled(
         enabled: Boolean,

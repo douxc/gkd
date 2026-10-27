@@ -118,7 +118,6 @@ abstract class A11yService : AccessibilityService(), A11yCommonImpl {
                     shutdown(true)
                 }
             }
-            StatusService.autoStart()
             scope.launch {
                 delay(3000)
                 if (!(destroyed || connected)) {
@@ -132,7 +131,6 @@ abstract class A11yService : AccessibilityService(), A11yCommonImpl {
                 instance = null
             }
             isRunning.value = false
-            releaseKeepAliveOverlayAfterHandoff()
             if (tempShutdownFlag) {
                 ToastUtils.show(Res.string.a11y_partially_disabled.getSync())
             } else {
@@ -163,29 +161,6 @@ abstract class A11yService : AccessibilityService(), A11yCommonImpl {
         }
     }
 
-    private fun attachKeepAliveOverlay() {
-        if (!KeepAliveOverlayCoordinator.acquire(
-                source = KeepAliveOverlayCoordinator.Source.Accessibility,
-                owner = this,
-                context = this,
-                windowType = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            )
-        ) {
-            ToastUtils.show(Res.string.a11y_keep_alive_failed.getSync())
-        }
-    }
-
-    private fun releaseKeepAliveOverlayAfterHandoff() {
-        appScope.launch {
-            KeepAliveOverlayCoordinator.releaseAfterHandoff(
-                source = KeepAliveOverlayCoordinator.Source.Accessibility,
-                owner = this@A11yService,
-                replacement = KeepAliveOverlayCoordinator.Source.Status
-                    .takeIf { StatusService.isRunning.value },
-            )
-        }
-    }
-
     override fun onCreate() {
         super.onCreate()
         lifecycleHooks.dispatchCreated()
@@ -195,7 +170,6 @@ abstract class A11yService : AccessibilityService(), A11yCommonImpl {
         super.onServiceConnected()
         LogUtils.d("onA11yConnected -> ${this::class.simpleName}")
         instance = this
-        attachKeepAliveOverlay()
         connected = true
         ToastUtils.show(Res.string.a11y_started.getSync())
         if (currentAppUseA11y) {

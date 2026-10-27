@@ -11,7 +11,6 @@ import li.gkd.app.app
 import li.gkd.app.appScope
 import li.gkd.app.permission.PermissionStates
 import li.gkd.app.resources.*
-import li.gkd.app.service.StatusService
 import li.gkd.app.service.currentAppBlocked
 import li.gkd.app.service.currentAppUseA11y
 import li.gkd.app.service.updateTopTaskAppId
@@ -77,11 +76,6 @@ private suspend fun updatePrivilegeContext(serverInfo: PrivilegeServerInfo?) =
                 AutomationService.tryConnect(true)
             }
             PermissionStates.refreshAll()
-            if (StatusService.needRestart) {
-                privilegeContext.startForegroundService(
-                    Intent(app, StatusService::class.java),
-                )
-            }
             if (showToast) {
                 ToastUtils.show(Res.string.privilege_service_connect_success.getSync())
             }

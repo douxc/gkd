@@ -33,7 +33,6 @@ abstract class BaseTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
-        StatusService.autoStart()
         onTileClick()
     }
 

@@ -13,7 +13,6 @@ import li.gkd.app.priv.privilegeServiceStatusFlow
 import li.gkd.app.priv.uiAutomationFlow
 import li.gkd.app.service.A11yService
 import li.gkd.app.service.ActivityService
-import li.gkd.app.service.StatusService
 import li.gkd.app.service.a11yPartDisabledFlow
 import li.gkd.app.service.topAppIdFlow
 
@@ -24,7 +23,7 @@ actual fun dashboardPlatformState(): DashboardPlatformState {
     val capabilities by PermissionStates.privilegeCapabilities.collectAsStateWithLifecycle()
     val a11y by A11yService.isRunning.collectAsStateWithLifecycle()
     val automation by uiAutomationFlow.collectAsStateWithLifecycle()
-    val status by StatusService.isRunning.collectAsStateWithLifecycle()
+    val status = false
     val secure by PermissionStates.writeSecureSettings.stateFlow.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val enabled = remember { useA11yServiceEnabledFlow(scope) }

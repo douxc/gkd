@@ -183,7 +183,6 @@ class PrivilegeContext private constructor(
             grantSelfPermission(AndroidPermissions.WRITE_EXTERNAL_STORAGE)
         }
         if (AndroidTarget.TIRAMISU) {
-            grantSelfPermission(AndroidPermissions.POST_NOTIFICATIONS)
         }
         if (AndroidTarget.CINNAMON_BUN) {
             grantSelfPermission(AndroidPermissions.ACCESS_LOCAL_NETWORK)

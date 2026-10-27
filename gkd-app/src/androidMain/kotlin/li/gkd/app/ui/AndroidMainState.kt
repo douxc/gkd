@@ -50,17 +50,6 @@ class AndroidMainState(
     private val mainVm: MainViewModel,
     val permissionRequests: PermissionRequests,
 ) : AutoCloseable {
-    /** Returns whether the start request was issued; observe StatusService for running state. */
-    suspend fun enableStatusService(): Boolean {
-        if (!permissionRequests.ensurePermissions(
-                PermissionStates.foregroundServiceSpecialUse,
-                PermissionStates.notification,
-            )
-        ) return false
-        ServiceController.setStatusEnabled(true)
-        return true
-    }
-
     val activityResults = ActivityResultRequests()
 
     fun handleGkdUri(uri: Uri) {

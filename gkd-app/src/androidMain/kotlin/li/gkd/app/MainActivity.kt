@@ -29,7 +29,6 @@ import li.gkd.app.platform.lifecycle.onCreated
 import li.gkd.app.platform.lifecycle.useLogLifecycle
 import li.gkd.app.platform.lifecycle.useMainActivityLifecycle
 import li.gkd.app.resources.*
-import li.gkd.app.service.StatusService
 import li.gkd.app.service.updateTopTaskAppId
 import li.gkd.app.settings.SettingsRepository.settings
 import li.gkd.app.storage.saveToDownloads
@@ -115,7 +114,6 @@ class MainActivity : ComponentActivity() {
             if (!DesktopProfileExport.handle(this@MainActivity, it)) mainVm.androidState.handleIntent(it)
             intent = null
         }
-        StatusService.autoStart()
         if (settings.value.enableBlockA11yAppList) {
             updateTopTaskAppId(META.appId)
         }

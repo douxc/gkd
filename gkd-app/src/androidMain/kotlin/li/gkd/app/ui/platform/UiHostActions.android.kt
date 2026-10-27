@@ -6,8 +6,7 @@ import li.gkd.app.settings.AutomatorMode
 import li.gkd.app.ui.share.launchUi
 
 actual fun UiHost.setStatusServiceEnabled(enabled: Boolean) {
-    if (enabled) mainVm.scope.launchUi { mainVm.androidState.enableStatusService() }
-    else ServiceController.setStatusEnabled(false)
+    // Legacy shared routes cannot start a foreground notification service.
 }
 
 actual fun UiHost.changeAutomatorMode(mode: AutomatorMode) {

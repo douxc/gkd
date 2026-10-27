@@ -255,6 +255,14 @@ class App : Application() {
     private fun initializeRuntimeComponents() {
         NotificationChannels.initialize()
         PackageAppCatalog.initialize()
+        li.gkd.app.settings.SettingsRepository.updateSettings {
+            it.copy(
+                automatorMode = li.gkd.app.settings.AutomatorMode.A11y.value,
+                enableBlockA11yAppList = false,
+                enableStatusService = false,
+                enableStatusOverlay = false,
+            )
+        }
         initA11yFeat()
         appScope.launchLogged(Dispatchers.IO) {
             SubscriptionRepository.initialize(SubscriptionDefaults.fromResources())
